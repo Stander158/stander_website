@@ -7,6 +7,7 @@
   <meta name="description" content="{% block description %}{{ site.description }}{% endblock %}">
   <link rel="alternate" type="application/rss+xml" title="{{ site.title }}" href="{{ url_for('feed') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  {% block head %}{% endblock %}
 </head>
 <body>
   <header class="site-header">

@@ -1,0 +1,30 @@
+{% extends "admin/layout.html" %}
+{% block title %}Passkey setup · {{ site.title }}{% endblock %}
+{% block content %}
+<div class="admin-narrow">
+  <h1>{{ "Set up a passkey" if first else "Add a passkey" }}</h1>
+  <form id="setup" class="stack">
+    {% if first %}
+    <label>Setup code
+      <input type="password" id="code" autocomplete="off" required>
+    </label>
+    {% endif %}
+    <label>Device name
+      <input type="text" id="name" placeholder="e.g. MacBook, iPhone" maxlength="60">
+    </label>
+    <button class="btn primary" type="submit">Create passkey</button>
+  </form>
+  <p class="status" id="status" role="status"></p>
+</div>
+<script src="{{ url_for('static', filename='admin/passkey.js') }}"></script>
+<script>
+  const form = document.getElementById("setup");
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const code = document.getElementById("code");
+    passkey.run(form.querySelector("button"),
+      () => passkey.register(code ? code.value : "", document.getElementById("name").value),
+      "{{ url_for('admin.dashboard') }}");
+  });
+</script>
+{% endblock %}

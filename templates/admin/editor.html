@@ -1,0 +1,51 @@
+{% extends "admin/layout.html" %}
+{% block title %}{{ "New" if is_new else "Edit" }} · {{ site.title }}{% endblock %}
+{% block admin_head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='vendor/toastui/toastui-editor.min.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='vendor/toastui/toastui-editor-dark.min.css') }}">
+{% endblock %}
+{% block content %}
+<div class="admin-bar">
+  <a href="{{ url_for('admin.dashboard') }}">&larr; Admin</a>
+  <span class="muted">{{ entry.kind|capitalize }}</span>
+</div>
+
+<form id="entry-form" class="editor-form" autocomplete="off">
+  <input class="title-input" name="title" placeholder="Title" required>
+  <div class="field-grid">
+    <label>Slug <input name="slug" pattern="[a-z0-9]+(-[a-z0-9]+)*" required {% if not is_new %}readonly{% endif %}></label>
+    <label>Date <input name="date" type="date" required></label>
+    <label class="wide">Summary <input name="summary" placeholder="One line shown in lists"></label>
+    <label class="wide">Tags <input name="tags" placeholder="comma, separated"></label>
+    {% if entry.kind == 'projects' %}
+    <label>Live link <input name="link" type="url" placeholder="https://"></label>
+    <label>Source repo <input name="repo" type="url" placeholder="https://github.com/…"></label>
+    {% endif %}
+    {% if entry.kind == 'art' %}
+    <label class="wide">Image
+      <span class="image-field">
+        <input name="image" placeholder="Upload or paste a URL">
+        <input type="file" id="art-file" accept="image/jpeg,image/png,image/gif,image/webp" hidden>
+        <button type="button" class="btn" id="art-upload">Upload</button>
+      </span>
+    </label>
+    <img id="art-preview" class="art-preview" alt="" hidden>
+    {% endif %}
+    <label class="check"><input name="draft" type="checkbox"> Draft (hidden from the site)</label>
+  </div>
+</form>
+
+<div id="editor"></div>
+
+<div class="editor-footer">
+  <p class="status" id="status" role="status"></p>
+  <div class="admin-actions">
+    {% if not is_new %}<button class="btn danger" id="delete">Delete</button>{% endif %}
+    <button class="btn primary" id="save">Save</button>
+  </div>
+</div>
+
+<script id="entry-data" type="application/json">{{ entry|tojson }}</script>
+<script src="{{ url_for('static', filename='vendor/toastui/toastui-editor.min.js') }}"></script>
+<script src="{{ url_for('static', filename='admin/editor.js') }}"></script>
+{% endblock %}

@@ -1,6 +1,7 @@
 import os
+import sys
 from urllib.parse import parse_qs, unquote
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from email.utils import format_datetime
 
 import frontmatter
@@ -8,6 +9,10 @@ import markdown
 from flask import Flask, Response, abort, render_template, request, url_for
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ROOT)
+
+from blog.admin import bp as admin_bp  # noqa: E402
+
 CONTENT_DIR = os.path.join(ROOT, "content")
 
 SITE = {
@@ -22,6 +27,7 @@ app = Flask(
     template_folder=os.path.join(ROOT, "templates"),
     static_folder=os.path.join(ROOT, "static"),
 )
+
 
 class OriginalPathMiddleware:
     """Vercel rewrites every request to /api/index; restore the path the visitor asked for."""
@@ -40,6 +46,17 @@ class OriginalPathMiddleware:
 
 
 app.wsgi_app = OriginalPathMiddleware(app.wsgi_app)
+
+ON_VERCEL = bool(os.environ.get("VERCEL"))
+app.config.update(
+    # Without SECRET_KEY on Vercel the admin refuses to run; this key is for local dev only.
+    SECRET_KEY=os.environ.get("SECRET_KEY") or ("" if ON_VERCEL else "local-dev-only"),
+    SESSION_COOKIE_SECURE=ON_VERCEL,
+    SESSION_COOKIE_SAMESITE="Strict",
+    PERMANENT_SESSION_LIFETIME=timedelta(days=7),
+    MAX_CONTENT_LENGTH=5 * 1024 * 1024,
+)
+app.register_blueprint(admin_bp)
 
 MD_EXTENSIONS = ["fenced_code", "codehilite", "tables", "toc", "footnotes", "sane_lists"]
 MD_CONFIG = {"codehilite": {"guess_lang": False, "css_class": "highlight"}}

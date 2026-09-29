@@ -1,0 +1,21 @@
+{% extends "admin/layout.html" %}
+{% block title %}Sign in · {{ site.title }}{% endblock %}
+{% block content %}
+<div class="admin-narrow">
+  <h1>Sign in</h1>
+  {% if has_passkey %}
+  <p class="muted">Use the passkey on this device.</p>
+  <button class="btn primary" id="login">Sign in with passkey</button>
+  {% else %}
+  <p class="muted">No passkey is registered for this site yet.</p>
+  <a class="btn primary" href="{{ url_for('admin.setup') }}">Set up a passkey</a>
+  {% endif %}
+  <p class="status" id="status" role="status"></p>
+</div>
+<script src="{{ url_for('static', filename='admin/passkey.js') }}"></script>
+<script>
+  const button = document.getElementById("login");
+  if (button) button.addEventListener("click", () =>
+    passkey.run(button, () => passkey.login(), "{{ url_for('admin.dashboard') }}"));
+</script>
+{% endblock %}
