@@ -2,5 +2,5 @@
 {% block title %}Not found · {{ site.title }}{% endblock %}
 {% block content %}
 <h1>404</h1>
-<p>This page doesn't exist. <a href="{{ url_for('home') }}">Go home</a>.</p>
+<p>Nothing at <code>{{ request.path }}</code>. <a href="{{ url_for('home') }}">Go home</a>.</p>
 {% endblock %}

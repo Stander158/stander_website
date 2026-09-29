@@ -1,4 +1,5 @@
 import os
+from urllib.parse import parse_qs, unquote
 from datetime import date, datetime
 from email.utils import format_datetime
 
@@ -21,6 +22,24 @@ app = Flask(
     template_folder=os.path.join(ROOT, "templates"),
     static_folder=os.path.join(ROOT, "static"),
 )
+
+class OriginalPathMiddleware:
+    """Vercel rewrites every request to /api/index; restore the path the visitor asked for."""
+
+    def __init__(self, wsgi_app):
+        self.wsgi_app = wsgi_app
+
+    def __call__(self, environ, start_response):
+        path = environ.get("PATH_INFO", "")
+        if path.startswith("/api/index"):
+            query = parse_qs(environ.get("QUERY_STRING", ""))
+            matches = parse_qs(environ.get("HTTP_X_NOW_ROUTE_MATCHES", ""))
+            original = (query.get("__path") or matches.get("1") or [""])[0]
+            environ["PATH_INFO"] = "/" + unquote(original).lstrip("/")
+        return self.wsgi_app(environ, start_response)
+
+
+app.wsgi_app = OriginalPathMiddleware(app.wsgi_app)
 
 MD_EXTENSIONS = ["fenced_code", "codehilite", "tables", "toc", "footnotes", "sane_lists"]
 MD_CONFIG = {"codehilite": {"guess_lang": False, "css_class": "highlight"}}
