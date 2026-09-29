@@ -5,7 +5,7 @@ Every push to `main` deploys to production.
 
 ## Writing content
 
-Add a Markdown file to `content/posts/` (writing) or `content/projects/` (projects).
+Add a Markdown file to `content/posts/`, `content/projects/`, or `content/art/`.
 The filename becomes the URL slug.
 
 ```markdown
@@ -21,6 +21,9 @@ repo: https://github.com/...  # projects only, optional: source
 
 Body in Markdown.
 ```
+
+Art entries also take `image: my-piece.jpg`. Put the image file in `static/art/`
+(or use a full `https://` URL).
 
 ## Layout
 

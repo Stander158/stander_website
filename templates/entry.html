@@ -20,7 +20,10 @@
     </div>
     {% endif %}
   </header>
+  {% if kind == 'art' and entry.image %}
+  <figure class="artwork"><img src="{{ entry.image | image_url }}" alt="{{ entry.title }}"></figure>
+  {% endif %}
   <div class="prose">{{ html | safe }}</div>
 </article>
-<p class="back"><a href="{{ url_for(kind) }}">&larr; Back to {{ 'writing' if kind == 'posts' else 'projects' }}</a></p>
+<p class="back"><a href="{{ url_for(kind) }}">&larr; Back to {{ kind }}</a></p>
 {% endblock %}

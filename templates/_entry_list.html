@@ -1,7 +1,7 @@
 <ul class="entry-list">
   {% for e in entries %}
   <li>
-    <a class="entry-title" href="{{ url_for('post' if kind == 'posts' else 'project', slug=e.slug) }}">{{ e.title }}</a>
+    <a class="entry-title" href="{{ url_for(detail_endpoint[kind], slug=e.slug) }}">{{ e.title }}</a>
     {% if e.date %}<time datetime="{{ e.date.isoformat() }}">{{ e.date.strftime('%b %d, %Y') }}</time>{% endif %}
     {% if e.summary %}<p class="summary">{{ e.summary }}</p>{% endif %}
   </li>

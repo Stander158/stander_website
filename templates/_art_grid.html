@@ -1,0 +1,12 @@
+{% if entries %}
+<div class="art-grid">
+  {% for e in entries %}
+  <a class="art-card" href="{{ url_for('artwork', slug=e.slug) }}">
+    {% if e.image %}<img src="{{ e.image | image_url }}" alt="{{ e.title }}" loading="lazy">{% endif %}
+    <span class="art-title">{{ e.title }}</span>
+  </a>
+  {% endfor %}
+</div>
+{% else %}
+<p class="empty">Nothing here yet.</p>
+{% endif %}

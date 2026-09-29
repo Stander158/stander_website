@@ -5,7 +5,7 @@ from email.utils import format_datetime
 
 import frontmatter
 import markdown
-from flask import Flask, Response, abort, render_template, request
+from flask import Flask, Response, abort, render_template, request, url_for
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CONTENT_DIR = os.path.join(ROOT, "content")
@@ -75,6 +75,7 @@ def load_entries(kind):
             "tags": post.get("tags") or [],
             "link": post.get("link"),
             "repo": post.get("repo"),
+            "image": post.get("image"),
             "body": post.content,
         })
     entries.sort(key=lambda e: e["date"] or date.min, reverse=True)
@@ -94,7 +95,19 @@ def render_md(text):
 
 @app.context_processor
 def inject_site():
-    return {"site": SITE, "year": date.today().year}
+    return {"site": SITE, "year": date.today().year, "detail_endpoint": DETAIL_ENDPOINTS}
+
+
+# Maps a content kind to the endpoint that renders a single entry of it.
+DETAIL_ENDPOINTS = {"posts": "post", "projects": "project", "art": "artwork"}
+
+
+@app.template_filter("image_url")
+def image_url(image):
+    """Art images live in static/art/ unless given as a full URL."""
+    if not image or image.startswith(("http://", "https://")):
+        return image
+    return url_for("static", filename=f"art/{image}")
 
 
 @app.route("/")
@@ -103,12 +116,13 @@ def home():
         "index.html",
         posts=load_entries("posts")[:5],
         projects=load_entries("projects")[:3],
+        art=load_entries("art")[:3],
     )
 
 
 @app.route("/posts")
 def posts():
-    return render_template("list.html", heading="Writing", kind="posts", entries=load_entries("posts"))
+    return render_template("list.html", heading="Posts", kind="posts", entries=load_entries("posts"))
 
 
 @app.route("/posts/<slug>")
@@ -126,6 +140,17 @@ def projects():
 def project(slug):
     entry = get_entry("projects", slug)
     return render_template("entry.html", entry=entry, kind="projects", html=render_md(entry["body"]))
+
+
+@app.route("/art")
+def art():
+    return render_template("art.html", entries=load_entries("art"))
+
+
+@app.route("/art/<slug>")
+def artwork(slug):
+    entry = get_entry("art", slug)
+    return render_template("entry.html", entry=entry, kind="art", html=render_md(entry["body"]))
 
 
 @app.route("/tags/<tag>")
