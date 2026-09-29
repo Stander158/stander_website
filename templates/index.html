@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="intro">
+  <h1>Hi, I'm {{ site.author }}.</h1>
+  <p>{{ site.description }}</p>
+</section>
+
+<section>
+  <h2 class="section-title">Recent writing <a href="{{ url_for('posts') }}">all &rarr;</a></h2>
+  {% with entries=posts, kind='posts' %}{% include "_entry_list.html" %}{% endwith %}
+</section>
+
+<section>
+  <h2 class="section-title">Projects <a href="{{ url_for('projects') }}">all &rarr;</a></h2>
+  {% with entries=projects, kind='projects' %}{% include "_entry_list.html" %}{% endwith %}
+</section>
+{% endblock %}

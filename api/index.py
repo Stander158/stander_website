@@ -1,11 +1,139 @@
-from flask import Flask
+import os
+from datetime import date, datetime
+from email.utils import format_datetime
 
-app = Flask(__name__)
+import frontmatter
+import markdown
+from flask import Flask, Response, abort, render_template, request
 
-@app.route('/')
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CONTENT_DIR = os.path.join(ROOT, "content")
+
+SITE = {
+    "title": "Stander",
+    "description": "Notes, writing, and projects.",
+    "author": "Stander",
+    "url": "https://standerwebsite.vercel.app",
+}
+
+app = Flask(
+    __name__,
+    template_folder=os.path.join(ROOT, "templates"),
+    static_folder=os.path.join(ROOT, "static"),
+)
+
+MD_EXTENSIONS = ["fenced_code", "codehilite", "tables", "toc", "footnotes", "sane_lists"]
+MD_CONFIG = {"codehilite": {"guess_lang": False, "css_class": "highlight"}}
+
+
+def _to_date(value):
+    if isinstance(value, datetime):
+        return value.date()
+    if isinstance(value, date):
+        return value
+    if isinstance(value, str):
+        return date.fromisoformat(value)
+    return None
+
+
+def load_entries(kind):
+    """Load all markdown entries from content/<kind>/, newest first, drafts hidden."""
+    folder = os.path.join(CONTENT_DIR, kind)
+    entries = []
+    if not os.path.isdir(folder):
+        return entries
+    for name in os.listdir(folder):
+        if not name.endswith(".md"):
+            continue
+        post = frontmatter.load(os.path.join(folder, name))
+        if post.get("draft"):
+            continue
+        entries.append({
+            "slug": name[:-3],
+            "title": post.get("title", name[:-3]),
+            "date": _to_date(post.get("date")),
+            "summary": post.get("summary", ""),
+            "tags": post.get("tags") or [],
+            "link": post.get("link"),
+            "repo": post.get("repo"),
+            "body": post.content,
+        })
+    entries.sort(key=lambda e: e["date"] or date.min, reverse=True)
+    return entries
+
+
+def get_entry(kind, slug):
+    for entry in load_entries(kind):
+        if entry["slug"] == slug:
+            return entry
+    abort(404)
+
+
+def render_md(text):
+    return markdown.markdown(text, extensions=MD_EXTENSIONS, extension_configs=MD_CONFIG)
+
+
+@app.context_processor
+def inject_site():
+    return {"site": SITE, "year": date.today().year}
+
+
+@app.route("/")
 def home():
-    return 'Hello, World!'
+    return render_template(
+        "index.html",
+        posts=load_entries("posts")[:5],
+        projects=load_entries("projects")[:3],
+    )
 
-@app.route('/about')
+
+@app.route("/posts")
+def posts():
+    return render_template("list.html", heading="Writing", kind="posts", entries=load_entries("posts"))
+
+
+@app.route("/posts/<slug>")
+def post(slug):
+    entry = get_entry("posts", slug)
+    return render_template("entry.html", entry=entry, kind="posts", html=render_md(entry["body"]))
+
+
+@app.route("/projects")
+def projects():
+    return render_template("list.html", heading="Projects", kind="projects", entries=load_entries("projects"))
+
+
+@app.route("/projects/<slug>")
+def project(slug):
+    entry = get_entry("projects", slug)
+    return render_template("entry.html", entry=entry, kind="projects", html=render_md(entry["body"]))
+
+
+@app.route("/tags/<tag>")
+def tag(tag):
+    matches = [e for e in load_entries("posts") if tag in e["tags"]]
+    return render_template("list.html", heading=f"#{tag}", kind="posts", entries=matches)
+
+
+@app.route("/about")
 def about():
-    return 'About'
+    return render_template("about.html")
+
+
+@app.route("/feed.xml")
+def feed():
+    xml = render_template(
+        "feed.xml",
+        posts=load_entries("posts")[:20],
+        rfc822=lambda d: format_datetime(datetime(d.year, d.month, d.day)) if d else "",
+    )
+    return Response(xml, mimetype="application/rss+xml")
+
+
+@app.errorhandler(404)
+def not_found(e):
+    return render_template("404.html"), 404
+
+
+if __name__ == "__main__":
+    app.run(debug=True)

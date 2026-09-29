@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}{{ entry.title }} · {{ site.title }}{% endblock %}
+{% block description %}{{ entry.summary or site.description }}{% endblock %}
+{% block content %}
+<article>
+  <header class="entry-header">
+    <h1>{{ entry.title }}</h1>
+    <div class="meta">
+      {% if entry.date %}<time datetime="{{ entry.date.isoformat() }}">{{ entry.date.strftime('%B %d, %Y') }}</time>{% endif %}
+      {% if kind == 'posts' %}
+        {% for t in entry.tags %}<a class="tag" href="{{ url_for('tag', tag=t) }}">#{{ t }}</a>{% endfor %}
+      {% else %}
+        {% for t in entry.tags %}<span class="tag">{{ t }}</span>{% endfor %}
+      {% endif %}
+    </div>
+    {% if entry.link or entry.repo %}
+    <div class="links">
+      {% if entry.link %}<a href="{{ entry.link }}">Live &nearr;</a>{% endif %}
+      {% if entry.repo %}<a href="{{ entry.repo }}">Source &nearr;</a>{% endif %}
+    </div>
+    {% endif %}
+  </header>
+  <div class="prose">{{ html | safe }}</div>
+</article>
+<p class="back"><a href="{{ url_for(kind) }}">&larr; Back to {{ 'writing' if kind == 'posts' else 'projects' }}</a></p>
+{% endblock %}

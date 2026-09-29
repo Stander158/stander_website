@@ -1,28 +1,39 @@
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fexamples%2Ftree%2Fmain%2Fpython%2Fflask3&demo-title=Flask%203%20%2B%20Vercel&demo-description=Use%20Flask%203%20on%20Vercel%20with%20Serverless%20Functions%20using%20the%20Python%20Runtime.&demo-url=https%3A%2F%2Fflask3-python-template.vercel.app%2F&demo-image=https://assets.vercel.com/image/upload/v1669994156/random/flask.png)
+# stander_website
 
-# Flask + Vercel
+Personal blog built with Flask, deployed on Vercel at https://standerwebsite.vercel.app.
+Every push to `main` deploys to production.
 
-This example shows how to use Flask 3 on Vercel with Serverless Functions using the [Python Runtime](https://vercel.com/docs/concepts/functions/serverless-functions/runtimes/python).
+## Writing content
 
-## Demo
+Add a Markdown file to `content/posts/` (writing) or `content/projects/` (projects).
+The filename becomes the URL slug.
 
-https://flask-python-template.vercel.app/
+```markdown
+---
+title: My post
+date: 2026-09-29
+summary: One-line description shown in lists.
+tags: [python, notes]
+draft: true              # optional: hide from the site
+link: https://...        # projects only, optional: live demo
+repo: https://github.com/...  # projects only, optional: source
+---
 
-## How it Works
-
-This example uses the Web Server Gateway Interface (WSGI) with Flask to enable handling requests on Vercel with Serverless Functions.
-
-## Running Locally
-
-```bash
-npm i -g vercel
-vercel dev
+Body in Markdown.
 ```
 
-Your Flask application is now available at `http://localhost:3000`.
+## Layout
 
-## One-Click Deploy
+- `api/index.py` — Flask app (all routes; Vercel rewrites every request here)
+- `templates/` — Jinja templates
+- `static/style.css` — styles
+- `content/` — posts and projects
 
-Deploy the example using [Vercel](https://vercel.com?utm_source=github&utm_medium=readme&utm_campaign=vercel-examples):
+## Running locally
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fexamples%2Ftree%2Fmain%2Fpython%2Fflask3&demo-title=Flask%203%20%2B%20Vercel&demo-description=Use%20Flask%203%20on%20Vercel%20with%20Serverless%20Functions%20using%20the%20Python%20Runtime.&demo-url=https%3A%2F%2Fflask3-python-template.vercel.app%2F&demo-image=https://assets.vercel.com/image/upload/v1669994156/random/flask.png)
+```bash
+pip install -r requirements.txt
+python api/index.py
+```
+
+Open http://127.0.0.1:5000.
