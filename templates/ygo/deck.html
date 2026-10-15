@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% block title %}Deck Builder · {{ site.title }}{% endblock %}
+{% block description %}Build Yu-Gi-Oh! decks for TCG, OCG and Master Duel, with each format's banlist. Import and export .ydk files.{% endblock %}
+{% block main_class %}wide{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='ygo/deck.css') }}">
+{% endblock %}
+{% block content %}
+<div class="yd" id="yd" data-view="deck"
+     data-cards="{{ url_for('static', filename='ygo/cards.json') }}?v={{ data_version }}"
+     data-img="{{ url_for('ygo.card_image', size='SIZE', card_id=0)|replace('SIZE/0.jpg', '') }}">
+
+  <div class="yd-top">
+    <h1>Deck Builder</h1>
+    <div class="yd-seg" id="ydFormat" role="group" aria-label="Format">
+      <button type="button" data-format="tcg" aria-pressed="true">TCG</button>
+      <button type="button" data-format="ocg" aria-pressed="false">OCG</button>
+      <button type="button" data-format="md" aria-pressed="false">Master Duel</button>
+    </div>
+  </div>
+
+  <div class="yd-bar">
+    <label class="yd-field">
+      <span class="sr">Saved decks</span>
+      <select id="ydDecks"></select>
+    </label>
+    <label class="yd-field yd-name">
+      <span class="sr">Deck name</span>
+      <input type="text" id="ydName" maxlength="60" autocomplete="off" placeholder="Deck name">
+    </label>
+    <button type="button" class="yd-btn" data-act="new">New</button>
+    <button type="button" class="yd-btn" data-act="duplicate">Duplicate</button>
+    <button type="button" class="yd-btn" data-act="delete">Delete</button>
+    <span class="yd-bar-gap"></span>
+    <button type="button" class="yd-btn" data-act="import">Import</button>
+    <details class="yd-menu">
+      <summary class="yd-btn">Export</summary>
+      <div class="yd-menu-list">
+        <button type="button" data-act="ydk">Download .ydk</button>
+        <button type="button" data-act="ydke">Copy ydke:// code</button>
+        <button type="button" data-act="share">Copy share link</button>
+        <button type="button" data-act="image">Save as image</button>
+      </div>
+    </details>
+    <button type="button" class="yd-btn" data-act="sort">Sort</button>
+    <button type="button" class="yd-btn" data-act="clear">Clear</button>
+  </div>
+
+  <div class="yd-tabs" role="group" aria-label="View">
+    <button type="button" data-view="deck" aria-pressed="true">Deck <span id="ydTabCount">0</span></button>
+    <button type="button" data-view="search" aria-pressed="false">Search cards</button>
+  </div>
+
+  <div class="yd-layout">
+    <aside class="yd-detail" id="ydDetail" aria-live="polite">
+      <p class="yd-hint">Hover a card to read it.<br>Click a search result to add it, right-click to add it to the Side Deck.
+        Click a card in your deck to remove it, right-click to move it to or from the Side Deck. You can also drag cards.</p>
+    </aside>
+
+    <section class="yd-deck" aria-label="Deck">
+      <div class="yd-status" id="ydStatus"></div>
+      <div class="yd-zone" data-zone="main">
+        <h2><span>Main Deck</span> <b data-count>0</b> <small data-stats></small></h2>
+        <div class="yd-grid" data-grid></div>
+      </div>
+      <div class="yd-zone" data-zone="extra">
+        <h2><span>Extra Deck</span> <b data-count>0</b> <small data-stats></small></h2>
+        <div class="yd-grid" data-grid></div>
+      </div>
+      <div class="yd-zone" data-zone="side">
+        <h2><span>Side Deck</span> <b data-count>0</b> <small data-stats></small></h2>
+        <div class="yd-grid" data-grid></div>
+      </div>
+    </section>
+
+    <section class="yd-search" aria-label="Card search">
+      <div class="yd-filters">
+        <label class="yd-field yd-q">
+          <span class="sr">Search</span>
+          <input type="search" id="ydQ" autocomplete="off" spellcheck="false" placeholder="Card name or archetype">
+        </label>
+        <label class="yd-field"><span class="sr">Card type</span>
+          <select id="ydType">
+            <option value="">Any type</option>
+            <option value="monster">Monster</option>
+            <option value="main">Main Deck monster</option>
+            <option value="extra">Extra Deck monster</option>
+            <option value="spell">Spell</option>
+            <option value="trap">Trap</option>
+          </select>
+        </label>
+        <label class="yd-field"><span class="sr">Subtype</span><select id="ydSub" disabled><option value="">Any subtype</option></select></label>
+        <label class="yd-field"><span class="sr">Attribute</span><select id="ydAttr"><option value="">Any attribute</option></select></label>
+        <label class="yd-field"><span class="sr">Monster type</span><select id="ydRace"><option value="">Any monster type</option></select></label>
+        <label class="yd-field"><span class="sr">Level, Rank or Link</span><select id="ydLevel"><option value="">Any level / rank / link</option></select></label>
+        <label class="yd-field"><span class="sr">Banlist status</span>
+          <select id="ydBan">
+            <option value="">Any status</option>
+            <option value="F">Forbidden</option>
+            <option value="L">Limited</option>
+            <option value="S">Semi-Limited</option>
+            <option value="-">Unlimited</option>
+          </select>
+        </label>
+        <label class="yd-field"><span class="sr">Sort</span>
+          <select id="ydSort">
+            <option value="popular">Most viewed</option>
+            <option value="new">Newest</option>
+            <option value="name">Name</option>
+            <option value="atk">ATK</option>
+            <option value="def">DEF</option>
+            <option value="level">Level / Rank</option>
+          </select>
+        </label>
+        <label class="yd-check"><input type="checkbox" id="ydText"> Search card text</label>
+        <label class="yd-check"><input type="checkbox" id="ydAll"> Include cards not in <span data-format-label>TCG</span></label>
+        <button type="button" class="yd-link" data-act="reset">Reset filters</button>
+      </div>
+      <p class="yd-count" id="ydCount">Loading the card database…</p>
+      <div class="yd-results" id="ydResults">
+        <div class="yd-grid yd-grid-results" id="ydResultGrid"></div>
+        <div class="yd-more" id="ydMore" hidden></div>
+      </div>
+    </section>
+  </div>
+
+  <p class="yd-foot">Card data and images from <a href="https://ygoprodeck.com/">YGOPRODeck</a>; Master Duel banlist from
+    <a href="https://www.masterduelmeta.com/">Master Duel Meta</a>. Decks are saved in this browser only.
+    Unofficial fan project, not affiliated with Konami.</p>
+
+  <dialog class="yd-dialog" id="ydImport">
+    <form method="dialog">
+      <h2>Import a deck</h2>
+      <p>Choose a <code>.ydk</code> file (EDOPro, YGO Omega, YGOPRODeck), or paste its contents or a <code>ydke://</code> code.</p>
+      <input type="file" id="ydFile" accept=".ydk,text/plain">
+      <textarea id="ydPaste" rows="8" spellcheck="false" placeholder="#main&#10;14558127&#10;…  or  ydke://…"></textarea>
+      <div class="yd-dialog-foot">
+        <button type="submit" class="yd-btn" value="cancel">Cancel</button>
+        <button type="submit" class="yd-btn yd-primary" value="import">Import as new deck</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="yd-toast" id="ydToast" role="status" aria-live="polite"></div>
+</div>
+<script src="{{ url_for('static', filename='ygo/deck.js') }}?v={{ data_version }}" defer></script>
+{% endblock %}

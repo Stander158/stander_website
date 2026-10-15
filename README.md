@@ -41,6 +41,19 @@ python api/index.py
 
 Open http://127.0.0.1:5000.
 
+## Deck builder
+
+`/ygo/deck` is a Yu-Gi-Oh! deck builder (TCG, OCG, Master Duel) that runs in the
+browser: `blog/ygo.py`, `templates/ygo/deck.html`, `static/ygo/`. The card database is
+`static/ygo/cards.json`; rebuild it after a new set or banlist and commit the result:
+
+```bash
+python scripts/build_ygo_cards.py
+```
+
+Card images are proxied from YGOPRODeck through `/ygo/img/` and cached by Vercel's CDN
+for a year, so each image is fetched from them only once.
+
 ## Admin editor
 
 `/admin` is an in-browser editor, locked to the owner's passkey. Saving,

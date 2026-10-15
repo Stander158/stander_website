@@ -12,6 +12,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 
 from blog.admin import bp as admin_bp  # noqa: E402
+from blog.ygo import bp as ygo_bp  # noqa: E402
 
 CONTENT_DIR = os.path.join(ROOT, "content")
 
@@ -57,6 +58,7 @@ app.config.update(
     MAX_CONTENT_LENGTH=5 * 1024 * 1024,
 )
 app.register_blueprint(admin_bp)
+app.register_blueprint(ygo_bp)
 
 MD_EXTENSIONS = ["fenced_code", "codehilite", "tables", "toc", "footnotes", "sane_lists"]
 MD_CONFIG = {"codehilite": {"guess_lang": False, "css_class": "highlight"}}

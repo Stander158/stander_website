@@ -19,7 +19,7 @@
       <a href="{{ url_for('about') }}">About</a>
     </nav>
   </header>
-  <main>
+  <main class="{% block main_class %}{% endblock %}">
     {% block content %}{% endblock %}
   </main>
   <footer class="site-footer">
